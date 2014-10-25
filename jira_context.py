@@ -38,8 +38,8 @@ def _load_cookies(file_path):
     try:
         decoded = base64.b64decode(contents)
         parsed = json.loads(decoded)
-        sanitized = dict((k, v) for k, v in parsed.items())  # TODO
-    except (TypeError, ValueError):
+        sanitized = dict((k, v) for k, v in parsed.items() if k == 'JSESSIONID' and v.isalnum())
+    except (AttributeError, TypeError, ValueError):
         return dict()
 
     return sanitized
@@ -79,8 +79,10 @@ class JIRA(jira.client.JIRA):
     def __init__(self, prompt=True, *args, **kwargs):
         self.authentication_failed = False
         self.prompt_for_credentials = prompt
-        self.__delayed_args = (args, kwargs)
+        self.__authenticated_with_password = False  # True if cached cookies were not used to authenticate successfully.
+        self.__authenticated_with_cookies = False  # True if cached cookies were used to authenticate successfully.
         self.__cached_cookies = _load_cookies(self.COOKIE_CACHE_FILE_PATH)
+        self.__delayed_args = (args, kwargs)
 
     def __enter__(self):
         """Entering context, ask user for credentials if cookies fail."""
@@ -91,7 +93,7 @@ class JIRA(jira.client.JIRA):
         while True:
             if self.__cached_cookies:
                 # No need to prompt for credentials.
-                auth_result = self.__authenticate(None)
+                authenticated = self.__authenticate()
             elif not self.prompt_for_credentials:
                 # Unable to authenticate.
                 self.authentication_failed = True
@@ -105,38 +107,32 @@ class JIRA(jira.client.JIRA):
                 if not password:
                     JIRA.ABORTED_BY_USER = True
                     return self
-                auth_result = self.__authenticate((username, password))
+                authenticated = self.__authenticate((username, password))
 
-            if auth_result == 'cookies':
-                # Attempt to restore cookies failed, cookies have been deleted by __authenticate. Silently retrying.
-                continue
-            if auth_result == 'success':
+            if authenticated:
                 return self
-            if auth_result == 'invalid':
-                print(self.MESSAGE_AUTH_FAILURE, file=sys.stderr)
-            print(self.MESSAGE_AUTH_ERROR, file=sys.stderr)
 
     def __exit__(self):
         """Caches cookies to disk if they have changed."""
-        if self.ABORTED_BY_USER or self.__cached_cookies:
-            # Either the session was aborted by the user, or resumed session was used. No new cookies.
+        if self.ABORTED_BY_USER or self.authentication_failed:
+            # Unable to authenticate, not saving cookies.
             return
-        self.__cached_cookies = self._session.cookies.get_dict()
-        if not self.__cached_cookies:
-            # No cookies to cache.
+        if self.__authenticated_with_cookies or not self.__cached_cookies:
+            # Previous session resumed from cached cookies or no cookies to cache, not saving cookies.
             return
         _save_cookies(self.COOKIE_CACHE_FILE_PATH, self.__cached_cookies)
 
-    def __authenticate(self, basic_auth):
+    def __authenticate(self, basic_auth=None):
         """Attempt to authenticate to the JIRA server with either cookies or basic authentication. Handles errors too.
 
-        Positional arguments:
+        If self.prompt_for_credentials is True, prints error messages to stderr.
+
+        Keyword arguments:
         basic_auth -- tuple to be passed to jira.client.JIRA.__init__() parent class. First string is the username,
-            second string is the password.
+            second string is the password. None if using cookie authentication.
 
         Returns:
-        Four possible strings. 'error' on unknown/generic errors, 'cookies' on auth failures with cached cookies,
-        'invalid' on auth failures with basic_auth username and password, and 'success' on successful authentication.
+        True if successfully authenticated, False otherwise.
         """
         try:
             # Call delayed __init__() method from parent class.
@@ -147,7 +143,7 @@ class JIRA(jira.client.JIRA):
             for k, v in self.__cached_cookies.items():
                 self._session.cookies.set(k, v)
 
-            # Try to get a list of JIRA projects from the server. Might raise JIRAError.
+            # Try to get a list of JIRA projects from the server. self.projects() may raise JIRAError.
             if self.__cached_cookies and not self.projects():
                 # Loaded cached cookies but there are no JIRA projects, something is wrong.
                 raise JIRAError(401, 'Expired cookies.', '')
@@ -155,21 +151,31 @@ class JIRA(jira.client.JIRA):
         except JIRAError as e:
             if e.status_code != 401:
                 # Some unknown error occurred.
-                result = 'error'
+                if self.prompt_for_credentials and self.MESSAGE_AUTH_ERROR:
+                    print(self.MESSAGE_AUTH_ERROR, file=sys.stderr)
             elif self.__cached_cookies:
                 # User has not entered a password. Probably invalid cookies, probably first iteration.
-                result = 'cookies'
+                pass
             else:
                 # JIRAError raised HTTP 401 and cookies are not cached, invalid password.
-                result = 'invalid'
+                if self.prompt_for_credentials and self.MESSAGE_AUTH_FAILURE:
+                    print(self.MESSAGE_AUTH_FAILURE, file=sys.stderr)
+            self.authentication_failed = True
             self.__delete_cookies()
-            return result
+            self.__authenticated_with_cookies = False
+            self.__authenticated_with_password = False
+            return False
 
-        return 'success'
+        # Authentication was successful if this is reached.
+        self.authentication_failed = False
+        self.__cached_cookies = self._session.cookies.get_dict() if basic_auth else self.__cached_cookies
+        self.__authenticated_with_cookies = not bool(basic_auth)
+        self.__authenticated_with_password = bool(basic_auth)
+        return True
 
     def __delete_cookies(self):
         """Deletes cached cookie file and clears dict from class instance."""
-        self.__cached_cookies.clear()
+        self.__cached_cookies = dict()
         try:
             os.remove(self.COOKIE_CACHE_FILE_PATH)
         except OSError:
