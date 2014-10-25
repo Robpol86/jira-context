@@ -89,9 +89,10 @@ class JIRA(jira.client.JIRA):
     PROMPT_PASS = 'JIRA password: '
     PROMPT_USER = 'JIRA username: '
 
-    def __init__(self, prompt=True, *args, **kwargs):
+    def __init__(self, prompt_for_credentials=True, user_can_abort=False, *args, **kwargs):
         self.authentication_failed = False
-        self.prompt_for_credentials = prompt
+        self.prompt_for_credentials = prompt_for_credentials
+        self.user_can_abort = user_can_abort
         self.__authenticated_with_password = False  # True if cached cookies were not used to authenticate successfully.
         self.__authenticated_with_cookies = False  # True if cached cookies were used to authenticate successfully.
         self.__cached_cookies = _load_cookies(self.COOKIE_CACHE_FILE_PATH)
@@ -113,11 +114,11 @@ class JIRA(jira.client.JIRA):
                 return self
             else:
                 username = self.FORCE_USER or raw_input(self.PROMPT_USER)
-                if not username:
+                if not username and self.user_can_abort:
                     JIRA.ABORTED_BY_USER = True
                     return self
                 password = getpass(self.PROMPT_PASS)
-                if not password:
+                if not password and self.user_can_abort:
                     JIRA.ABORTED_BY_USER = True
                     return self
                 authenticated = self.__authenticate((username, password))
@@ -125,7 +126,7 @@ class JIRA(jira.client.JIRA):
             if authenticated:
                 return self
 
-    def __exit__(self):
+    def __exit__(self, *_):
         """Caches cookies to disk if they have changed."""
         if self.ABORTED_BY_USER or self.authentication_failed:
             # Unable to authenticate, not saving cookies.
