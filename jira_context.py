@@ -14,6 +14,10 @@ import sys
 import jira.client
 from jira.exceptions import JIRAError
 
+__author__ = '@Robpol86'
+__license__ = 'MIT'
+__version__ = '1.0.0'
+
 
 def _load_cookies(file_path):
     """Read cached cookies from file.
@@ -52,8 +56,17 @@ def _save_cookies(file_path, dict_object):
     file_path -- string representing the file path to where cookie data is to be stored on disk.
     dict_object -- dict containing the current JIRA session via JIRA()._session.cookies.get_dict().
     """
+    # Encode dict_object.
     json_string = json.dumps(dict_object)
     encoded = base64.b64encode(json_string)
+
+    # Remove existing files.
+    try:
+        os.remove(file_path)
+    except OSError:
+        pass
+
+    # Write file.
     old_mask = os.umask(0077)
     with open(file_path, 'wb') as f:
         f.seek(0)
@@ -161,7 +174,7 @@ class JIRA(jira.client.JIRA):
                 if self.prompt_for_credentials and self.MESSAGE_AUTH_FAILURE:
                     print(self.MESSAGE_AUTH_FAILURE, file=sys.stderr)
             self.authentication_failed = True
-            self.__delete_cookies()
+            self.__cached_cookies = dict()
             self.__authenticated_with_cookies = False
             self.__authenticated_with_password = False
             return False
@@ -172,11 +185,3 @@ class JIRA(jira.client.JIRA):
         self.__authenticated_with_cookies = not bool(basic_auth)
         self.__authenticated_with_password = bool(basic_auth)
         return True
-
-    def __delete_cookies(self):
-        """Deletes cached cookie file and clears dict from class instance."""
-        self.__cached_cookies = dict()
-        try:
-            os.remove(self.COOKIE_CACHE_FILE_PATH)
-        except OSError:
-            pass
