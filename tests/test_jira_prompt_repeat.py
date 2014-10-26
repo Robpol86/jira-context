@@ -13,8 +13,6 @@ _load_cookies = getattr(jira_context, '_load_cookies')
 
 @pytest.mark.httpretty
 def test_bad_cookies_bad_password_x2_good_password_success(tmpdir, capsys):
-    jira_context._prompt = lambda m, p: 'user' if m == raw_input else 'pass'
-    JIRA.ABORTED_BY_USER = False
     JIRA.COOKIE_CACHE_FILE_PATH = str(tmpdir.join('.jira_session_json'))
     _save_cookies(JIRA.COOKIE_CACHE_FILE_PATH, dict(JSESSIONID='ABC000'))
 
@@ -54,8 +52,6 @@ def test_bad_cookies_bad_password_x2_good_password_success(tmpdir, capsys):
 
 @pytest.mark.httpretty
 def test_unknown_error_give_up(tmpdir, capsys):
-    jira_context._prompt = lambda m, p: 'user' if m == raw_input else 'pass'
-    JIRA.ABORTED_BY_USER = False
     JIRA.COOKIE_CACHE_FILE_PATH = str(tmpdir.join('.jira_session_json'))
     assert dict() == _load_cookies(JIRA.COOKIE_CACHE_FILE_PATH)
 

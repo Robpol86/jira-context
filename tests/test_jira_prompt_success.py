@@ -13,8 +13,6 @@ _load_cookies = getattr(jira_context, '_load_cookies')
 
 @pytest.mark.httpretty
 def test_no_cookies(tmpdir):
-    jira_context._prompt = lambda f, p: 'user' if f == raw_input else 'pass'
-    JIRA.ABORTED_BY_USER = False
     JIRA.COOKIE_CACHE_FILE_PATH = str(tmpdir.join('.jira_session_json'))
     assert dict() == _load_cookies(JIRA.COOKIE_CACHE_FILE_PATH)
 
@@ -36,8 +34,6 @@ def test_no_cookies(tmpdir):
 
 @pytest.mark.httpretty
 def test_bad_cookies(tmpdir, capsys):
-    jira_context._prompt = lambda f, p: 'user' if f == raw_input else 'pass'
-    JIRA.ABORTED_BY_USER = False
     JIRA.COOKIE_CACHE_FILE_PATH = str(tmpdir.join('.jira_session_json'))
     _save_cookies(JIRA.COOKIE_CACHE_FILE_PATH, dict(JSESSIONID='ABC000'))
 
