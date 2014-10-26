@@ -52,11 +52,12 @@ def test_no_prompt_bad_cookies(tmpdir):
     _save_cookies(JIRA.COOKIE_CACHE_FILE_PATH, dict(JSESSIONID='ABC123'))
 
     @all_requests
-    def response_content(url, _):
+    def response_content(url, request):
         if url.path.endswith('/serverInfo'):
             reply = dict(status_code=200, content='{"versionNumbers":[6,4,0]}')
-        elif url.path.endswith('/project'):
-            reply = dict(status_code=401, content='')
+        elif url.path.endswith('/session'):
+            assert dict(JSESSIONID='ABC123') == getattr(request, '_cookies').get_dict()
+            reply = dict(status_code=401, content='{}')
         else:
             raise RuntimeError
         return reply
@@ -71,42 +72,18 @@ def test_no_prompt_bad_cookies(tmpdir):
     assert dict(JSESSIONID='ABC123') == _load_cookies(JIRA.COOKIE_CACHE_FILE_PATH)
 
 
-def test_no_prompt_good_cookies_no_projects(tmpdir):
+def test_no_prompt_good_cookies(tmpdir):
     JIRA.ABORTED_BY_USER = False
     JIRA.COOKIE_CACHE_FILE_PATH = str(tmpdir.join('.jira_session_json'))
     _save_cookies(JIRA.COOKIE_CACHE_FILE_PATH, dict(JSESSIONID='ABC123'))
 
     @all_requests
-    def response_content(url, _):
+    def response_content(url, request):
         if url.path.endswith('/serverInfo'):
             reply = dict(status_code=200, content='{"versionNumbers":[6,4,0]}')
-        elif url.path.endswith('/project'):
+        elif url.path.endswith('/session'):
+            assert dict(JSESSIONID='ABC123') == getattr(request, '_cookies').get_dict()
             reply = dict(status_code=200, content='{}')
-        else:
-            raise RuntimeError
-        return reply
-
-    with HTTMock(response_content):
-        with JIRA(prompt_for_credentials=False) as j:
-            assert j.ABORTED_BY_USER is False
-            assert j.authentication_failed is True
-            assert getattr(j, '_JIRA__authenticated_with_cookies') is False
-            assert getattr(j, '_JIRA__authenticated_with_password') is False
-
-    assert dict(JSESSIONID='ABC123') == _load_cookies(JIRA.COOKIE_CACHE_FILE_PATH)
-
-
-def test_no_prompt_good_cookies_yes_projects(tmpdir):
-    JIRA.ABORTED_BY_USER = False
-    JIRA.COOKIE_CACHE_FILE_PATH = str(tmpdir.join('.jira_session_json'))
-    _save_cookies(JIRA.COOKIE_CACHE_FILE_PATH, dict(JSESSIONID='ABC123'))
-
-    @all_requests
-    def response_content(url, _):
-        if url.path.endswith('/serverInfo'):
-            reply = dict(status_code=200, content='{"versionNumbers":[6,4,0]}')
-        elif url.path.endswith('/project'):
-            reply = dict(status_code=200, content='[{"name": "Clover", "key": "CLOV", "id": "11772"}]')
         else:
             raise RuntimeError
         return reply

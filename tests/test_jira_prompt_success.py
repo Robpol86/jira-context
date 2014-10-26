@@ -1,7 +1,8 @@
 from __future__ import print_function
 import base64
+import json
 
-from httmock import all_requests, HTTMock, response
+from httmock import all_requests, HTTMock
 
 import jira_context
 from jira_context import JIRA
@@ -25,11 +26,10 @@ def test_no_cookies(tmpdir, capsys):
     def response_content(url, request):
         assert 'user:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1])
         if url.path.endswith('/serverInfo'):
-            headers = {'content-type': 'application/json', 'Set-Cookie': 'JSESSIONID=ABC123'}
-            content = '{"versionNumbers":[6,4,0]}'
-            return response(200, content, headers, None, 5, request)
-        elif url.path.endswith('/project'):
-            reply = dict(status_code=200, content='[{"name": "Clover", "key": "CLOV", "id": "11772"}]')
+            reply = dict(status_code=200, content='{"versionNumbers":[6,4,0]}')
+        elif url.path.endswith('/session'):
+            assert dict(username='user', password='pass') == json.loads(request.body)
+            reply = dict(status_code=200, content='{}', headers={'Set-Cookie': 'JSESSIONID=ABC123;'})
         else:
             raise RuntimeError
         return reply

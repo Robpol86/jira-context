@@ -162,12 +162,8 @@ class JIRA(jira.client.JIRA):
             for k, v in self.__cached_cookies.items():
                 self._session.cookies.set(k, v)
 
-            # Try to get a list of JIRA projects from the server. self.projects() may raise JIRAError.
-            if self.__cached_cookies and not self.projects():
-                # Loaded cached cookies but there are no JIRA projects, something is wrong.
-                raise JIRAError(401, 'Expired cookies.', '')
-            else:
-                self.projects()
+            # Validate cookies or credentials. May raise JIRAError.
+            self.session()
 
         except JIRAError as e:
             if e.status_code != 401:
