@@ -48,7 +48,6 @@ def test_no_prompt_no_cookies(tmpdir):
 
 
 def test_no_prompt_bad_cookies(tmpdir):
-    JIRA.DEFAULT_OPTIONS['server'] = 'http://localhost/jira'
     JIRA.ABORTED_BY_USER = False
     JIRA.COOKIE_CACHE_FILE_PATH = str(tmpdir.join('.jira_session_json'))
     _save_cookies(JIRA.COOKIE_CACHE_FILE_PATH, dict(JSESSIONID='ABC123'))
