@@ -4,7 +4,7 @@ import pytest
 from pytest_httpretty import last_request, stub_get
 
 import jira_context
-from jira_context import JIRA
+from jira_context import INPUT, JIRA
 
 _save_cookies = getattr(jira_context, '_save_cookies')
 _load_cookies = getattr(jira_context, '_load_cookies')
@@ -19,7 +19,7 @@ def test_aborted_before(tmpdir):
 
 
 def test_aborted_during_username(tmpdir):
-    jira_context._prompt = lambda m, p: '' if m == raw_input else 'pass'
+    jira_context._prompt = lambda m, p: '' if m == INPUT else 'pass'
     JIRA.COOKIE_CACHE_FILE_PATH = str(tmpdir.join('.jira_session_json'))
 
     with JIRA() as j:
@@ -27,7 +27,7 @@ def test_aborted_during_username(tmpdir):
 
 
 def test_aborted_during_password(tmpdir):
-    jira_context._prompt = lambda m, p: 'user' if m == raw_input else ''
+    jira_context._prompt = lambda m, p: 'user' if m == INPUT else ''
     JIRA.COOKIE_CACHE_FILE_PATH = str(tmpdir.join('.jira_session_json'))
 
     with JIRA() as j:

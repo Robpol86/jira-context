@@ -1,12 +1,12 @@
 import pytest
 
 import jira_context
-from jira_context import JIRA
+from jira_context import INPUT, JIRA
 
 
 @pytest.fixture(autouse=True)
 def reset_jira():
-    jira_context._prompt = lambda f, p: 'user' if f == raw_input else 'pass'
+    jira_context._prompt = lambda f, p: 'user' if f == INPUT else 'pass'
 
     JIRA.ABORTED_BY_USER = False
     JIRA.COOKIE_CACHE_FILE_PATH = None

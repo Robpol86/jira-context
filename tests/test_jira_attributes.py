@@ -5,7 +5,7 @@ import httpretty
 import pytest
 
 import jira_context
-from jira_context import JIRA
+from jira_context import INPUT, JIRA
 
 _save_cookies = getattr(jira_context, '_save_cookies')
 _load_cookies = getattr(jira_context, '_load_cookies')
@@ -13,7 +13,7 @@ _load_cookies = getattr(jira_context, '_load_cookies')
 
 @pytest.mark.httpretty
 def test_force_user(tmpdir):
-    jira_context._prompt = lambda f, p: (0 / 0) if f == raw_input else 'pass'  # ZeroDivisionError if prompted for user.
+    jira_context._prompt = lambda f, p: (0 / 0) if f == INPUT else 'pass'  # ZeroDivisionError if prompted for user.
     JIRA.COOKIE_CACHE_FILE_PATH = str(tmpdir.join('.jira_session_json'))
     JIRA.FORCE_USER = 'test_account'
     assert dict() == _load_cookies(JIRA.COOKIE_CACHE_FILE_PATH)
@@ -36,7 +36,7 @@ def test_force_user(tmpdir):
 
 @pytest.mark.httpretty
 def test_user_can_abort_username(tmpdir):
-    jira_context._prompt = lambda f, p: '' if f == raw_input else 'pass'
+    jira_context._prompt = lambda f, p: '' if f == INPUT else 'pass'
     JIRA.COOKIE_CACHE_FILE_PATH = str(tmpdir.join('.jira_session_json'))
     JIRA.USER_CAN_ABORT = False
     assert dict() == _load_cookies(JIRA.COOKIE_CACHE_FILE_PATH)
@@ -59,7 +59,7 @@ def test_user_can_abort_username(tmpdir):
 
 @pytest.mark.httpretty
 def test_user_can_abort_password(tmpdir):
-    jira_context._prompt = lambda f, p: 'user' if f == raw_input else ''
+    jira_context._prompt = lambda f, p: 'user' if f == INPUT else ''
     JIRA.COOKIE_CACHE_FILE_PATH = str(tmpdir.join('.jira_session_json'))
     JIRA.USER_CAN_ABORT = False
     assert dict() == _load_cookies(JIRA.COOKIE_CACHE_FILE_PATH)
