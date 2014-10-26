@@ -78,6 +78,11 @@ def _save_cookies(file_path, dict_object):
     os.umask(old_mask)
 
 
+def _prompt(func, prompt):
+    """Prompts user for data. This is for testing."""
+    return func(prompt)
+
+
 class JIRA(jira.client.JIRA):
     """."""
 
@@ -88,13 +93,13 @@ class JIRA(jira.client.JIRA):
     MESSAGE_AUTH_FAILURE = 'Authentication failed or bad password, try again.'
     PROMPT_PASS = 'JIRA password: '
     PROMPT_USER = 'JIRA username: '
+    USER_CAN_ABORT = True
 
-    def __init__(self, prompt_for_credentials=True, user_can_abort=False, *args, **kwargs):
+    def __init__(self, prompt_for_credentials=True, *args, **kwargs):
         self.authentication_failed = False
         self.prompt_for_credentials = prompt_for_credentials
-        self.user_can_abort = user_can_abort
-        self.__authenticated_with_password = False  # True if cached cookies were not used to authenticate successfully.
         self.__authenticated_with_cookies = False  # True if cached cookies were used to authenticate successfully.
+        self.__authenticated_with_password = False  # True if cached cookies were not used to authenticate successfully.
         self.__cached_cookies = _load_cookies(self.COOKIE_CACHE_FILE_PATH)
         self.__delayed_args = (args, kwargs)
 
@@ -113,12 +118,12 @@ class JIRA(jira.client.JIRA):
                 self.authentication_failed = True
                 return self
             else:
-                username = self.FORCE_USER or raw_input(self.PROMPT_USER)
-                if not username and self.user_can_abort:
+                username = self.FORCE_USER or _prompt(raw_input, self.PROMPT_USER)
+                if not username and self.USER_CAN_ABORT:
                     JIRA.ABORTED_BY_USER = True
                     return self
-                password = getpass(self.PROMPT_PASS)
-                if not password and self.user_can_abort:
+                password = _prompt(getpass, self.PROMPT_PASS)
+                if not password and self.USER_CAN_ABORT:
                     JIRA.ABORTED_BY_USER = True
                     return self
                 authenticated = self.__authenticate((username, password))
@@ -161,6 +166,8 @@ class JIRA(jira.client.JIRA):
             if self.__cached_cookies and not self.projects():
                 # Loaded cached cookies but there are no JIRA projects, something is wrong.
                 raise JIRAError(401, 'Expired cookies.', '')
+            else:
+                self.projects()
 
         except JIRAError as e:
             if e.status_code != 401:
