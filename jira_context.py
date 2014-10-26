@@ -18,6 +18,8 @@ __author__ = '@Robpol86'
 __license__ = 'MIT'
 __version__ = '1.0.0'
 
+_PY3 = bool(sys.version_info[0] == 3)
+
 
 def _load_cookies(file_path):
     """Read cached cookies from file.
@@ -119,7 +121,7 @@ class JIRA(jira.client.JIRA):
                 self.authentication_failed = True
                 return self
             else:
-                username = self.FORCE_USER or _prompt(raw_input, self.PROMPT_USER)
+                username = self.FORCE_USER or _prompt(input if _PY3 else raw_input, self.PROMPT_USER)
                 if not username and self.USER_CAN_ABORT:
                     JIRA.ABORTED_BY_USER = True
                     return self
