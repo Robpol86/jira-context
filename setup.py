@@ -116,7 +116,7 @@ ALL_DATA = dict(
     zip_safe=True,
 
     install_requires=['jira'],
-    tests_require=['pytest', 'pytest-cov', 'httmock'],
+    tests_require=['pytest', 'pytest-cov', 'httpretty'],
     cmdclass=dict(test=PyTest, testpdb=PyTestPdb, testcovweb=PyTestCovWeb, style=CmdStyle, lint=CmdLint),
 
     # Pass the rest from get_metadata().
