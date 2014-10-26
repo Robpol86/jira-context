@@ -57,7 +57,8 @@ def _save_cookies(file_path, dict_object):
     dict_object -- dict containing the current JIRA session via JIRA()._session.cookies.get_dict().
     """
     # Encode dict_object.
-    json_string = json.dumps(dict_object)
+    sanitized = dict((k, v) for k, v in dict_object.items() if k == 'JSESSIONID' and str(v).isalnum())
+    json_string = json.dumps(sanitized)
     encoded = base64.b64encode(json_string)
 
     # Remove existing files.
@@ -67,7 +68,7 @@ def _save_cookies(file_path, dict_object):
         pass
 
     # Write file.
-    old_mask = os.umask(0077)
+    old_mask = os.umask(0o077)
     with open(file_path, 'wb') as f:
         f.seek(0)
         f.truncate()
