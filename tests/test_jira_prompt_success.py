@@ -3,6 +3,7 @@ import base64
 import re
 
 import httpretty
+import pytest
 
 import jira_context
 from jira_context import JIRA
@@ -16,6 +17,7 @@ def _prompt(func, prompt):
     return 'user' if func == raw_input else 'pass'
 
 
+@pytest.mark.httpretty
 def test_no_cookies(tmpdir, capsys):
     jira_context._prompt = _prompt
     JIRA.ABORTED_BY_USER = False
@@ -26,8 +28,6 @@ def test_no_cookies(tmpdir, capsys):
         assert 'user:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1])
         headers['Set-Cookie'] = 'JSESSIONID=ABC123; Path=/'
         return 200, headers, '{}'
-
-    httpretty.enable()
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
     httpretty.register_uri(httpretty.POST, re.compile('.*/session'), body=session_callback)
 
@@ -41,6 +41,3 @@ def test_no_cookies(tmpdir, capsys):
     stdout, stderr = capsys.readouterr()
     assert 'JIRA username: \nJIRA password: \n' == stdout
     assert '' == stderr
-
-    httpretty.disable()
-    httpretty.reset()
