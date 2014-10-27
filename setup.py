@@ -94,7 +94,7 @@ ALL_DATA = dict(
     url='https://github.com/Robpol86/{0}'.format(NAME),
     author_email='robpol86@gmail.com',
 
-    classifiers=['TODO'
+    classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Environment :: MacOS X',

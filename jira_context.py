@@ -1,5 +1,11 @@
 """Cache JIRA basic authentication sessions to disk for console apps.
 
+Designed for command line programs/scripts as a context manager. When used, the JIRA class attempts to resume a
+previously saved session stored on disk (by default in the user's home directory). If the session has expired or fails,
+the user will be prompted for their credentials, and upon authentication the session cookie is cached to disk. The main
+goal of this library is to avoid having the user repeatedly enter their JIRA credentials every time they use a console
+application, either within the same process or when they re-run an application which uses this library.
+
 https://github.com/Robpol86/jira-context
 https://pypi.python.org/pypi/jira-context
 """
@@ -23,7 +29,7 @@ INPUT = input if _PY3 else raw_input
 
 
 def _load_cookies(file_path):
-    """Read cached cookies from file.
+    """Read cached cookies from file. Filters out everything but JSESSIONID.
 
     Positional arguments:
     file_path -- string representing the file path to where cookie data is to be stored on disk.
@@ -53,7 +59,7 @@ def _load_cookies(file_path):
 
 
 def _save_cookies(file_path, dict_object):
-    """Cache cookies dictionary to file.
+    """Cache cookies dictionary to file. Filters out everything but JSESSIONID.
 
     Positional arguments:
     file_path -- string representing the file path to where cookie data is to be stored on disk.
@@ -88,7 +94,33 @@ def _prompt(func, prompt):
 
 
 class JIRA(jira.client.JIRA):
-    """."""
+    """jira.client.JIRA subclass, basically makes the original JIRA library context-aware.
+
+    Authentication happens not during instantiation but when the context is entered (using the `with` statement). Cookie
+    caching only happens on context exit (after the `with` code block) if authentication was successful and a new cookie
+    was returned by the JIRA server.
+
+    Class variables (persists until the application terminates):
+    ABORTED_BY_USER -- False by default. Set to True if USER_CAN_ABORT is True and the user enters a blank username or
+        password. If this variable is ever set to True, this class will never authenticate (both cookie or password
+        methods).
+    COOKIE_CACHE_FILE_PATH -- file path to the cache file used to store the base64 encoded session cookie.
+    FORCE_USER -- if set to a string, user won't be prompted for their username. Value of this variable will be used
+        instead.
+    USER_CAN_ABORT -- by default if a user enters a blank username or password, it is understood that they do not want
+        to authenticate to the JIRA server. Set this to False to send blank user/passwords to the JIRA server which will
+        inevitably result in an authentication error, causing the program to prompt the user for their credentials
+        again.
+
+    Instance variables:
+    prompt_for_credentials -- by default user will be prompted for credentials if cached cookies fail. If False the user
+        won't be prompted for credentials. If cached cookies are valid then the program may be able to authenticate if
+        they are not invalid. If cached cookies are not available or are invalid/expired and this is True, user will not
+        be authenticated and `authentication_failed` will be set to True. This variable is useful to set during
+        instantiation when used within a thread.
+    authentication_failed -- will be set to True if authentication was not successful and user is not prompted for
+        credentials.
+    """
 
     ABORTED_BY_USER = False
     COOKIE_CACHE_FILE_PATH = os.path.join(os.path.expanduser('~'), '.jira_session_json')
