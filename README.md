@@ -38,6 +38,7 @@ import sys
 from jira_context import JIRA
 
 server = 'https://jira.company.local'
+query = 'assignee = currentUser() AND resolution = Unresolved'
 if len(sys.argv) == 2:
     JIRA.FORCE_USER = sys.argv[1]
 
@@ -46,13 +47,13 @@ with JIRA(server=server) as j:
     if j.ABORTED_BY_USER:
         print('Aborted by user.', file=sys.stderr)
         sys.exit(1)
-    issues = j.search_issues('assignee = currentUser() AND resolution = Unresolved', maxResults=5)
+    issues = j.search_issues(query, maxResults=5)
 
 for issue in issues:
     print(issue.key, issue.fields.summary)
 ```
 
-```
+```bash
 $ python example.py
 Connecting to: https://jira.company.local
 JIRA username: does_not_exist
@@ -77,6 +78,17 @@ FAKE-468 create page and with custom fields
 FAKE-022 As a burndown gadget I should support GH 6.0+
 $
 ```
+
+### Class Attributes
+
+Name | Description/Notes
+:--- | :----------------
+`ABORTED_BY_USER` | False by default. Becomes True if `USER_CAN_ABORT` is True and the user enters a blank username or password.
+`COOKIE_CACHE_FILE_PATH` | File path to the cache file used to store the base64 encoded session cookie.
+`FORCE_USER` | If set to a string, user won't be prompted for their username.
+`USER_CAN_ABORT` | Set to False if you don't want the user to continue without a JIRA session if they enter a blank user/pass.
+`prompt_for_credentials` | Instantiate with False if you don't want the user prompted for credentials (useful in threads).
+`authentication_failed` | Becomes True if `prompt_for_credentials` is False and cached cookies were invalid/missing.
 
 ## Changelog
 
