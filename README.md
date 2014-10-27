@@ -37,26 +37,45 @@ from __future__ import print_function
 import sys
 from jira_context import JIRA
 
+server = 'https://jira.company.local'
 if len(sys.argv) == 2:
     JIRA.FORCE_USER = sys.argv[1]
 
-with JIRA(server='https://jira.atlassian.com') as j:
+print('Connecting to: ' + server)
+with JIRA(server=server) as j:
     if j.ABORTED_BY_USER:
         print('Aborted by user.', file=sys.stderr)
         sys.exit(1)
-    projects = [p.key for p in j.projects()]
+    issues = j.search_issues('assignee = currentUser() AND resolution = Unresolved', maxResults=5)
 
-for project in projects:
-    print(project)
+for issue in issues:
+    print(issue.key, issue.fields.summary)
 ```
 
 ```
 $ python example.py
+Connecting to: https://jira.company.local
 JIRA username: does_not_exist
 JIRA password:
 Authentication failed or bad password, try again.
 JIRA username:
 Aborted by user.
+$ python example.py $USER
+Connecting to: https://jira.company.local
+JIRA password:
+FAKE-659 service solahart hp 082113812149
+FAKE-620 Need new version to be compatible in Jira 6.3.1
+FAKE-525 Half page become blank when Activity Stream gadget view as Wallboard
+FAKE-468 create page and with custom fields
+FAKE-022 As a burndown gadget I should support GH 6.0+
+$ python example.py
+Connecting to: https://jira.company.local
+FAKE-659 service solahart hp 082113812149
+FAKE-620 Need new version to be compatible in Jira 6.3.1
+FAKE-525 Half page become blank when Activity Stream gadget view as Wallboard
+FAKE-468 create page and with custom fields
+FAKE-022 As a burndown gadget I should support GH 6.0+
+$
 ```
 
 ## Changelog
