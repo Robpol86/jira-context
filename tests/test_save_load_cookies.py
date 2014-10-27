@@ -30,7 +30,7 @@ def test_new_file(tmpdir):
 
     assert os.path.exists(file_path)
     assert dict(JSESSIONID='ABCDEF123456789') == _load_cookies(file_path)
-    assert '0600' == oct(os.stat(file_path).st_mode & 0777)
+    assert '0600' == oct(os.stat(file_path).st_mode & 0o777)
 
 
 def test_existing_file(tmpdir):
@@ -39,7 +39,7 @@ def test_existing_file(tmpdir):
     file_path = str(tmpdir_file)
 
     assert os.path.exists(file_path)
-    assert '0600' != oct(os.stat(file_path).st_mode & 0777)
+    assert '0600' != oct(os.stat(file_path).st_mode & 0o777)
     assert dict() == _load_cookies(file_path)
     assert os.path.exists(file_path)
 
@@ -48,7 +48,7 @@ def test_existing_file(tmpdir):
 
     assert os.path.exists(file_path)
     assert dict(JSESSIONID='ABCDEF123456789') == _load_cookies(file_path)
-    assert '0600' == oct(os.stat(file_path).st_mode & 0777)
+    assert '0600' == oct(os.stat(file_path).st_mode & 0o777)
 
 
 def test_existing_empty_file(tmpdir):
@@ -57,7 +57,7 @@ def test_existing_empty_file(tmpdir):
     file_path = str(tmpdir_file)
 
     assert os.path.exists(file_path)
-    assert '0600' != oct(os.stat(file_path).st_mode & 0777)
+    assert '0600' != oct(os.stat(file_path).st_mode & 0o777)
     assert dict() == _load_cookies(file_path)
     assert os.path.exists(file_path)
 
@@ -66,7 +66,7 @@ def test_existing_empty_file(tmpdir):
 
     assert os.path.exists(file_path)
     assert dict(JSESSIONID='ABCDEF123456789') == _load_cookies(file_path)
-    assert '0600' == oct(os.stat(file_path).st_mode & 0777)
+    assert '0600' == oct(os.stat(file_path).st_mode & 0o777)
 
 
 @pytest.mark.parametrize('input_dict,output_dict', FINAL_TEST_ANSWERS)
@@ -74,4 +74,4 @@ def test_dangerous_file(tmpdir, input_dict, output_dict):
     file_path = str(tmpdir.join('.jira_session_json'))
     _save_cookies(file_path, input_dict)
     assert output_dict == _load_cookies(file_path)
-    assert '0600' == oct(os.stat(file_path).st_mode & 0777)
+    assert '0600' == oct(os.stat(file_path).st_mode & 0o777)

@@ -62,7 +62,7 @@ def _save_cookies(file_path, dict_object):
     # Encode dict_object.
     sanitized = dict((k, v) for k, v in dict_object.items() if k == 'JSESSIONID' and str(v).isalnum())
     json_string = json.dumps(sanitized)
-    encoded = base64.b64encode(json_string)
+    encoded = base64.b64encode(json_string.encode('ascii'))
 
     # Remove existing files.
     try:
