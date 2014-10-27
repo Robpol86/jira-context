@@ -53,7 +53,7 @@ for issue in issues:
     print(issue.key, issue.fields.summary)
 ```
 
-```bash
+```
 $ python example.py
 Connecting to: https://jira.company.local
 JIRA username: does_not_exist
@@ -76,10 +76,14 @@ FAKE-620 Need new version to be compatible in Jira 6.3.1
 FAKE-525 Half page become blank when Activity Stream gadget view as Wallboard
 FAKE-468 create page and with custom fields
 FAKE-022 As a burndown gadget I should support GH 6.0+
-$
 ```
 
-### Class Attributes
+## Class Attributes
+
+### Persisted
+
+These attributes/variables are persisted throughout the lifetime of the currently running process. If you've got two
+`with` blocks and `ABORTED_BY_USER` becomes True in the first one, the second block will skip authentication.
 
 Name | Description/Notes
 :--- | :----------------
@@ -87,6 +91,13 @@ Name | Description/Notes
 `COOKIE_CACHE_FILE_PATH` | File path to the cache file used to store the base64 encoded session cookie.
 `FORCE_USER` | If set to a string, user won't be prompted for their username.
 `USER_CAN_ABORT` | Set to False if you don't want the user to continue without a JIRA session if they enter a blank user/pass.
+
+### Instance
+
+These attributes are persisted only in the current JIRA() instance.
+
+Name | Description/Notes
+:--- | :----------------
 `prompt_for_credentials` | Instantiate with False if you don't want the user prompted for credentials (useful in threads).
 `authentication_failed` | Becomes True if `prompt_for_credentials` is False and cached cookies were invalid/missing.
 
