@@ -1,6 +1,11 @@
 # jira-context
 
-Store JIRA basic authentication sessions to FileCookieJar for console apps.
+Do you have command line applications which interact with JIRA servers? Do your users have to enter their credentials
+every time they run your applications? Are you unable to use OAuth because your command line application is open sourced
+or you have no way of securing the consumer secret?
+
+Hi, Robpol86 here for jira-context. The easy way to prompt for credentials and cache session cookies on your clients'
+workstations.
 
 `jira-context` is supported on Python 2.6, 2.7, 3.3, and 3.4.
 
@@ -22,6 +27,36 @@ Store JIRA basic authentication sessions to FileCookieJar for console apps.
 Install:
 ```bash
 pip install jira-context
+```
+
+## Usage
+
+```python
+# example.py
+from __future__ import print_function
+import sys
+from jira_context import JIRA
+
+if len(sys.argv) == 2:
+    JIRA.FORCE_USER = sys.argv[1]
+
+with JIRA(server='https://jira.atlassian.com') as j:
+    if j.ABORTED_BY_USER:
+        print('Aborted by user.', file=sys.stderr)
+        sys.exit(1)
+    projects = [p.key for p in j.projects()]
+
+for project in projects:
+    print(project)
+```
+
+```
+$ python example.py
+JIRA username: does_not_exist
+JIRA password:
+Authentication failed or bad password, try again.
+JIRA username:
+Aborted by user.
 ```
 
 ## Changelog
