@@ -22,11 +22,11 @@ def test_bad_cookies_bad_password_x2_good_password_success(tmpdir, capsys):
         return 401, headers, '{}'
 
     def second_and_third_session_callback(request, _, headers):
-        assert 'user:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1])
+        assert 'user:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1]).decode('ascii')
         return 401, headers, '{}'
 
     def fourth_session_callback(request, _, headers):
-        assert 'user:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1])
+        assert 'user:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1]).decode('ascii')
         headers['Set-Cookie'] = 'JSESSIONID=ABC123; Path=/'
         return 200, headers, '{}'
 
@@ -56,7 +56,7 @@ def test_unknown_error_give_up(tmpdir, capsys):
     assert dict() == _load_cookies(JIRA.COOKIE_CACHE_FILE_PATH)
 
     def session_callback(request, _, headers):
-        assert 'user:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1])
+        assert 'user:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1]).decode('ascii')
         jira_context._prompt = lambda *_: ''  # Simulate an empty user/pass on the next iteration.
         return 500, headers, '{}'
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')

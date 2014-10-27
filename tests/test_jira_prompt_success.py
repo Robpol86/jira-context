@@ -17,7 +17,7 @@ def test_no_cookies(tmpdir):
     assert dict() == _load_cookies(JIRA.COOKIE_CACHE_FILE_PATH)
 
     def session_callback(request, _, headers):
-        assert 'user:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1])
+        assert 'user:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1]).decode('ascii')
         headers['Set-Cookie'] = 'JSESSIONID=ABC123; Path=/'
         return 200, headers, '{}'
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
@@ -43,7 +43,7 @@ def test_bad_cookies(tmpdir, capsys):
         return 401, headers, '{}'
 
     def second_session_callback(request, _, headers):
-        assert 'user:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1])
+        assert 'user:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1]).decode('ascii')
         headers['Set-Cookie'] = 'JSESSIONID=ABC123; Path=/'
         return 200, headers, '{}'
 

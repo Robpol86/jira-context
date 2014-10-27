@@ -19,7 +19,7 @@ def test_force_user(tmpdir):
     assert dict() == _load_cookies(JIRA.COOKIE_CACHE_FILE_PATH)
 
     def session_callback(request, _, headers):
-        assert 'test_account:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1])
+        assert 'test_account:pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1]).decode('ascii')
         headers['Set-Cookie'] = 'JSESSIONID=ABC123; Path=/'
         return 200, headers, '{}'
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
@@ -42,7 +42,7 @@ def test_user_can_abort_username(tmpdir):
     assert dict() == _load_cookies(JIRA.COOKIE_CACHE_FILE_PATH)
 
     def session_callback(request, _, headers):
-        assert ':pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1])
+        assert ':pass' == base64.b64decode(request.headers['Authorization'].split(' ')[-1]).decode('ascii')
         headers['Set-Cookie'] = 'JSESSIONID=ABC123; Path=/'
         return 200, headers, '{}'
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
@@ -65,7 +65,7 @@ def test_user_can_abort_password(tmpdir):
     assert dict() == _load_cookies(JIRA.COOKIE_CACHE_FILE_PATH)
 
     def session_callback(request, _, headers):
-        assert 'user:' == base64.b64decode(request.headers['Authorization'].split(' ')[-1])
+        assert 'user:' == base64.b64decode(request.headers['Authorization'].split(' ')[-1]).decode('ascii')
         headers['Set-Cookie'] = 'JSESSIONID=ABC123; Path=/'
         return 200, headers, '{}'
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')

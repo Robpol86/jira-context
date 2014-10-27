@@ -43,7 +43,7 @@ def _load_cookies(file_path):
 
     # Parse file.
     try:
-        decoded = base64.b64decode(contents)
+        decoded = base64.b64decode(contents).decode('ascii')
         parsed = json.loads(decoded)
         sanitized = dict((k, v) for k, v in parsed.items() if k == 'JSESSIONID' and v.isalnum())
     except (AttributeError, TypeError, ValueError):
