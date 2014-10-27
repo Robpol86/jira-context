@@ -14,7 +14,8 @@ from setuptools.command.test import test
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 setuptools.command.sdist.READMES = tuple(list(getattr(setuptools.command.sdist, 'READMES', ())) + ['README.md'])
-NAME = 'jira_context'
+NAME = 'jira-context'
+NAME_FILE = NAME.replace('-', '_')
 PACKAGE = False
 
 
@@ -43,7 +44,7 @@ def get_metadata(main_file):
 
 
 class PyTest(test):
-    TEST_ARGS = ['--cov-report', 'term-missing', '--cov', NAME, 'tests']
+    TEST_ARGS = ['--cov-report', 'term-missing', '--cov', NAME_FILE, 'tests']
 
     def finalize_options(self):
         test.finalize_options(self)
@@ -62,7 +63,7 @@ class PyTestPdb(PyTest):
 
 
 class PyTestCovWeb(PyTest):
-    TEST_ARGS = ['--cov-report', 'html', '--cov', NAME, 'tests']
+    TEST_ARGS = ['--cov-report', 'html', '--cov', NAME_FILE, 'tests']
 
     def run_tests(self):
         if find_executable('open'):
@@ -72,7 +73,7 @@ class PyTestCovWeb(PyTest):
 
 class CmdStyle(setuptools.Command):
     user_options = []
-    CMD_ARGS = ['flake8', '--max-line-length', '120', '--statistics', NAME + ('' if PACKAGE else '.py')]
+    CMD_ARGS = ['flake8', '--max-line-length', '120', '--statistics', NAME_FILE + ('' if PACKAGE else '.py')]
 
     def initialize_options(self):
         pass
@@ -85,7 +86,7 @@ class CmdStyle(setuptools.Command):
 
 
 class CmdLint(CmdStyle):
-    CMD_ARGS = ['pylint', '--max-line-length', '120', NAME + ('' if PACKAGE else '.py')]
+    CMD_ARGS = ['pylint', '--max-line-length', '120', NAME_FILE + ('' if PACKAGE else '.py')]
 
 
 ALL_DATA = dict(
@@ -112,7 +113,7 @@ ALL_DATA = dict(
     ],
 
     keywords='jira',
-    py_modules=[NAME],
+    py_modules=[NAME_FILE],
     zip_safe=True,
 
     install_requires=['jira'],
@@ -120,7 +121,7 @@ ALL_DATA = dict(
     cmdclass=dict(test=PyTest, testpdb=PyTestPdb, testcovweb=PyTestCovWeb, style=CmdStyle, lint=CmdLint),
 
     # Pass the rest from get_metadata().
-    **get_metadata(os.path.join(NAME + ('/__init__.py' if PACKAGE else '.py')))
+    **get_metadata(os.path.join(NAME_FILE + ('/__init__.py' if PACKAGE else '.py')))
 )
 
 
