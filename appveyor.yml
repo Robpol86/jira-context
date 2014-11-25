@@ -1,6 +1,6 @@
 environment:
   CODECOV_TOKEN:
-    secure: lRDAuCOF7traajWkLJe3cdECzcFF90IwYPae/AIthbH3LQh7hYH++L5yu1LfLGNB
+    secure: 6lFWB3pCBPt5kSn3Qezn/EjRyFXkYBnNnVmC9s4m2INZ+GW3jm1TWBNtxaGh/GxR
   PYTHONIOENCODING: utf-8
 
   matrix:
@@ -18,7 +18,7 @@ install:
   - ps: Start-FileDownload https://raw.github.com/pypa/pip/master/contrib/get-pip.py
   - python get-pip.py
   - ps: pip install $(python -c 'import setup; print(setup.REQUIRES_PIP)')
-  - pip install robpol86-codecov colorclass
+  - pip install robpol86-codecov
 
 build_script:
   - ps: mv .git ..
@@ -27,8 +27,5 @@ build_script:
 
 test_script:
   - python setup.py test
-  - python example1.py
-  - python example2.py
-  - python -c "import terminaltables; terminaltables.DEFAULT_TERMINAL_WIDTH=80; import example3"
 
 after_test: codecov
