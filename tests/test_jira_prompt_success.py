@@ -22,6 +22,7 @@ def test_no_cookies(tmpdir):
         return 200, headers, '{}'
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
     httpretty.register_uri(httpretty.POST, re.compile('.*/session'), body=session_callback)
+    httpretty.register_uri(httpretty.GET, re.compile('.*/search'), body='{"issues":[], "total":0}')
 
     with JIRA() as j:
         assert j.ABORTED_BY_USER is False
@@ -50,6 +51,7 @@ def test_bad_cookies(tmpdir, capsys):
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
     httpretty.register_uri(httpretty.GET, re.compile('.*/session'), body=first_session_callback)
     httpretty.register_uri(httpretty.POST, re.compile('.*/session'), body=second_session_callback)
+    httpretty.register_uri(httpretty.GET, re.compile('.*/search'), body='{"issues":[], "total":0}')
 
     with JIRA() as j:
         assert j.ABORTED_BY_USER is False

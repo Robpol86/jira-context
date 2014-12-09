@@ -24,6 +24,7 @@ def test_force_user(tmpdir):
         return 200, headers, '{}'
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
     httpretty.register_uri(httpretty.POST, re.compile('.*/session'), body=session_callback)
+    httpretty.register_uri(httpretty.GET, re.compile('.*/search'), body='{"issues":[], "total":0}')
 
     with JIRA() as j:
         assert j.ABORTED_BY_USER is False
@@ -47,6 +48,7 @@ def test_user_can_abort_username(tmpdir):
         return 200, headers, '{}'
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
     httpretty.register_uri(httpretty.POST, re.compile('.*/session'), body=session_callback)
+    httpretty.register_uri(httpretty.GET, re.compile('.*/search'), body='{"issues":[], "total":0}')
 
     with JIRA() as j:
         assert j.ABORTED_BY_USER is False
@@ -70,6 +72,7 @@ def test_user_can_abort_password(tmpdir):
         return 200, headers, '{}'
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
     httpretty.register_uri(httpretty.POST, re.compile('.*/session'), body=session_callback)
+    httpretty.register_uri(httpretty.GET, re.compile('.*/search'), body='{"issues":[], "total":0}')
 
     with JIRA() as j:
         assert j.ABORTED_BY_USER is False

@@ -53,6 +53,7 @@ def test_no_prompt_bad_cookies(tmpdir):
 
     stub_get(re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
     stub_get(re.compile('.*/session'), body='{}', status=401)
+    stub_get(re.compile('.*/search'), body='{}', status=401)
 
     with JIRA(prompt_for_credentials=False) as j:
         assert 'JSESSIONID=ABC123' == last_request().headers['Cookie']
@@ -71,6 +72,7 @@ def test_no_prompt_good_cookies(tmpdir):
 
     stub_get(re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
     stub_get(re.compile('.*/session'), body='{}', status=200)
+    stub_get(re.compile('.*/search'), body='{"issues":[], "total":0}', status=200)
 
     with JIRA(prompt_for_credentials=False) as j:
         assert 'JSESSIONID=ABC123' == last_request().headers['Cookie']

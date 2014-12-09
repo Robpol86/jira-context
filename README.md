@@ -7,19 +7,15 @@ or you have no way of securing the consumer secret?
 Hi, Robpol86 here for jira-context. The easy way to prompt for credentials and cache session cookies on your clients'
 workstations.
 
-`jira-context` is supported on Python 2.6, 2.7, 3.3, and 3.4.
+* Python 2.6, 2.7, 3.3, and 3.4 supported on Linux and OS X.
 
-[![Build Status](https://travis-ci.org/Robpol86/jira-context.svg?branch=master)]
+[![Build Status](https://img.shields.io/travis/Robpol86/jira-context/master.svg?style=flat-square)]
 (https://travis-ci.org/Robpol86/jira-context)
-[![Coverage Status](https://img.shields.io/coveralls/Robpol86/jira-context.svg)]
-(https://coveralls.io/r/Robpol86/jira-context)
-[![Latest Version](https://pypip.in/version/jira-context/badge.png)]
+[![Coverage Status](https://img.shields.io/codecov/c/github/Robpol86/jira-context/master.svg?style=flat-square)]
+(https://codecov.io/github/Robpol86/jira-context)
+[![Latest Version](https://img.shields.io/pypi/v/jira-context.svg?style=flat-square)]
 (https://pypi.python.org/pypi/jira-context/)
-[![Downloads](https://pypip.in/download/jira-context/badge.png)]
-(https://pypi.python.org/pypi/jira-context/)
-[![Download format](https://pypip.in/format/jira-context/badge.png)]
-(https://pypi.python.org/pypi/jira-context/)
-[![License](https://pypip.in/license/jira-context/badge.png)]
+[![Downloads](https://img.shields.io/pypi/dm/jira-context.svg?style=flat-square)]
 (https://pypi.python.org/pypi/jira-context/)
 
 ## Quickstart

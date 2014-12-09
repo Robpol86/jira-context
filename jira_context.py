@@ -29,7 +29,7 @@ INPUT = input if _PY3 else raw_input
 
 
 def _load_cookies(file_path):
-    """Read cached cookies from file. Filters out everything but JSESSIONID.
+    """Read cached cookies from file. Filters out everything but JSESSIONID and crowd.token_key.
 
     Positional arguments:
     file_path -- string representing the file path to where cookie data is to be stored on disk.
@@ -51,7 +51,7 @@ def _load_cookies(file_path):
     try:
         decoded = base64.b64decode(contents).decode('ascii')
         parsed = json.loads(decoded)
-        sanitized = dict((k, v) for k, v in parsed.items() if k == 'JSESSIONID' and v.isalnum())
+        sanitized = dict((k, v) for k, v in parsed.items() if k in ('JSESSIONID', 'crowd.token_key') and v.isalnum())
     except (AttributeError, TypeError, ValueError):
         return dict()
 
@@ -59,14 +59,15 @@ def _load_cookies(file_path):
 
 
 def _save_cookies(file_path, dict_object):
-    """Cache cookies dictionary to file. Filters out everything but JSESSIONID.
+    """Cache cookies dictionary to file. Filters out everything but JSESSIONID and crowd.token_key.
 
     Positional arguments:
     file_path -- string representing the file path to where cookie data is to be stored on disk.
     dict_object -- dict containing the current JIRA session via JIRA()._session.cookies.get_dict().
     """
     # Encode dict_object.
-    sanitized = dict((k, v) for k, v in dict_object.items() if k == 'JSESSIONID' and str(v).isalnum())
+    sanitized = dict((k, v) for k, v in dict_object.items()
+                     if k in ('JSESSIONID', 'crowd.token_key') and str(v).isalnum())
     json_string = json.dumps(sanitized)
     encoded = base64.b64encode(json_string.encode('ascii'))
 
@@ -195,11 +196,11 @@ class JIRA(jira.client.JIRA):
             super(JIRA, self).__init__(basic_auth=basic_auth, *args, **kwargs)
 
             # Inject cached cookies.
-            for k, v in self.__cached_cookies.items():
-                self._session.cookies.set(k, v)
+            self._session.cookies.update(self.__cached_cookies)
 
             # Validate cookies or credentials. May raise JIRAError.
             self.session()
+            self.search_issues('assignee = currentUser()', maxResults=1)  # Oddly this fixes Crowd auth issues.
 
         except JIRAError as e:
             if e.status_code != 401:

@@ -16,6 +16,8 @@ FINAL_TEST_ANSWERS = (
     (dict(JSESSIONID='ABC123;'), dict()),
     (dict(JSESSIONID='ABC123\\'), dict()),
     (dict(JSESSIONID='ABC123'), dict(JSESSIONID='ABC123')),
+    ({'JSESSIONID': 'ABC123', 'crowd.token_key': 'DEF456\\'}, dict(JSESSIONID='ABC123')),
+    ({'JSESSIONID': 'ABC123', 'crowd.token_key': 'DEF456'}, {'JSESSIONID': 'ABC123', 'crowd.token_key': 'DEF456'}),
 )
 
 

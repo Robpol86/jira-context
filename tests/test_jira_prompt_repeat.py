@@ -36,6 +36,7 @@ def test_bad_cookies_bad_password_x2_good_password_success(tmpdir, capsys):
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
     httpretty.register_uri(httpretty.GET, re.compile('.*/session'), body=first_session_callback)
     httpretty.register_uri(httpretty.POST, re.compile('.*/session'), responses=responses)
+    httpretty.register_uri(httpretty.GET, re.compile('.*/search'), body='{"issues":[], "total":0}')
 
     with JIRA() as j:
         assert j.ABORTED_BY_USER is False
@@ -61,6 +62,7 @@ def test_unknown_error_give_up(tmpdir, capsys):
         return 500, headers, '{}'
     httpretty.register_uri(httpretty.GET, re.compile('.*/serverInfo'), body='{"versionNumbers":[6,4,0]}')
     httpretty.register_uri(httpretty.POST, re.compile('.*/session'), body=session_callback)
+    httpretty.register_uri(httpretty.GET, re.compile('.*/search'), body='{"issues":[], "total":0}')
 
     with JIRA() as j:
         assert j.ABORTED_BY_USER is True

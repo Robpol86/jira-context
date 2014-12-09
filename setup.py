@@ -14,9 +14,15 @@ from setuptools.command.test import test
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 setuptools.command.sdist.READMES = tuple(list(getattr(setuptools.command.sdist, 'READMES', ())) + ['README.md'])
+
+DESCRIPTION = 'Cache JIRA basic authentication sessions to disk for console apps.'
+KEYWORDS = 'jira'
 NAME = 'jira-context'
 NAME_FILE = NAME.replace('-', '_')
 PACKAGE = False
+REQUIRES_INSTALL = ['jira']
+REQUIRES_TEST = ['pytest', 'pytest-cov', 'pytest-httpretty']
+REQUIRES_PIP = '"' + '" "'.join(set(REQUIRES_INSTALL + REQUIRES_TEST)) + '"'
 
 
 def get_metadata(main_file):
@@ -44,6 +50,7 @@ def get_metadata(main_file):
 
 
 class PyTest(test):
+    description = 'Run all tests.'
     TEST_ARGS = ['--cov-report', 'term-missing', '--cov', NAME_FILE, 'tests']
 
     def finalize_options(self):
@@ -59,10 +66,12 @@ class PyTest(test):
 
 
 class PyTestPdb(PyTest):
-    TEST_ARGS = ['--pdb', 'tests']
+    description = 'Run all tests, drops to ipdb upon unhandled exception.'
+    TEST_ARGS = ['--ipdb', 'tests']
 
 
 class PyTestCovWeb(PyTest):
+    description = 'Generates HTML report on test coverage.'
     TEST_ARGS = ['--cov-report', 'html', '--cov', NAME_FILE, 'tests']
 
     def run_tests(self):
@@ -86,12 +95,13 @@ class CmdStyle(setuptools.Command):
 
 
 class CmdLint(CmdStyle):
+    description = 'Run pylint on entire project.'
     CMD_ARGS = ['pylint', '--max-line-length', '120', NAME_FILE + ('' if PACKAGE else '.py')]
 
 
 ALL_DATA = dict(
     name=NAME,
-    description='Cache JIRA basic authentication sessions to disk for console apps.',
+    description=DESCRIPTION,
     url='https://github.com/Robpol86/{0}'.format(NAME),
     author_email='robpol86@gmail.com',
 
@@ -112,12 +122,12 @@ ALL_DATA = dict(
         'Topic :: Text Processing :: Markup',
     ],
 
-    keywords='jira',
+    keywords=KEYWORDS,
     py_modules=[NAME_FILE],
     zip_safe=True,
 
-    install_requires=['jira'],
-    tests_require=['pytest', 'pytest-cov', 'pytest-httpretty'],
+    install_requires=REQUIRES_INSTALL,
+    tests_require=REQUIRES_TEST,
     cmdclass=dict(test=PyTest, testpdb=PyTestPdb, testcovweb=PyTestCovWeb, style=CmdStyle, lint=CmdLint),
 
     # Pass the rest from get_metadata().
